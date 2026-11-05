@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="format-detection" content="telephone=no">
+<title>欢迎加入S.O.T.</title>
+<!-- 内联 SVG favicon（data URI，不产生外部请求） -->
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwMDAiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIvPjxwYXRoIGQ9Ik0yNC41IDMyLjVsNS41IDUuNSA5LjUtMTEuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
+<style>
+  /* ========== 基础与配色 ========== */
+  :root {
+    color-scheme: dark;
+    --ink: #ffffff;
+    --muted: rgba(255, 255, 255, 0.58);
+    --line: rgba(255, 255, 255, 0.16);
+    --danger: #ff6b6b;
+    --radius: 16px;
+    --ease-out: cubic-bezier(0.22, 0.68, 0.16, 1);
+    --ease-draw: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html {
+    height: 100%;
+    background: #000;
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    background: #000;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+      "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 极淡的径向光晕与暗角，营造纵深，不抢内容 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(130% 72% at 50% -18%, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 62%),
+      radial-gradient(90% 58% at 50% 118%, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 72%),
+      radial-gradient(46% 36% at 50% 44%, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0) 74%);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(130% 130% at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  [hidden] { display: none !important; }
+
+  ::selection { background: #fff; color: #000; }
+
+  /* ========== 版面 ========== */
+  .stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 28px 22px 84px; /* 不支持 env() 的旧浏览器回退 */
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 28px)
+      22px
+      calc(env(safe-area-inset-bottom, 0px) + 84px);
+  }
+
+  .view {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ========== 首屏 ========== */
+  .form-view {
+    transition: opacity 0.38s ease, transform 0.38s var(--ease-out);
+  }
+
+  .form-view.is-leaving {
+    opacity: 0;
+    transform: translateY(-14px);
+    pointer-events: none;
+  }
+
+  /* 首屏元素依次上浮入场 */
+  .form-view > * {
+    opacity: 0;
+    animation: rise-in 0.62s var(--ease-out) forwards;
+  }
+  .form-view > :nth-child(1) { animation-delay: 0.03s; }
+  .form-view > :nth-child(2) { animation-delay: 0.09s; }
+  .form-view > :nth-child(3) { animation-delay: 0.15s; }
+  .form-view > :nth-child(4) { animation-delay: 0.21s; }
+  .form-view > :nth-child(5) { animation-delay: 0.28s; }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 0;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+    white-space: nowrap;
+  }
+
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    flex: none;
+    width: 26px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .title {
+    margin: 22px 0 0;
+    font-size: clamp(26px, 8.2vw, 36px);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.03em;
+  }
+
+  /* 品牌字距略宽，负外边距修正视觉居中 */
+  .title .brand {
+    letter-spacing: 0.12em;
+    margin-right: -0.12em;
+  }
+
+  .lead {
+    margin: 14px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  /* ========== 输入区 ========== */
+  .field {
+    margin-top: 42px;
+    text-align: left;
+  }
+
+  .name-input {
+    display: block;
+    width: 100%;
+    height: 56px;
+    padding: 0 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px; /* 16px 可避免 iOS 聚焦时页面自动放大 */
+    letter-spacing: 0.02em;
+    caret-color: #fff;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+  }
+
+  .name-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+  @media (hover: hover) {
+    .name-input:hover { border-color: rgba(255, 255, 255, 0.28); }
+  }
+
+  .name-input:focus {
+    border-color: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 0 0 4px rgba(255, 255, 255, 0.06),
+      0 0 28px rgba(255, 255, 255, 0.08);
+  }
+
+  .name-input.is-invalid { border-color: rgba(255, 107, 107, 0.7); }
+
+  .name-input.is-invalid:focus {
+    border-color: rgba(255, 107, 107, 0.9);
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.08);
+  }
+
+  .name-input.is-shaking { animation: shake 0.4s var(--ease-out) both; }
+
+  .name-input:-webkit-autofill,
+  .name-input:-webkit-autofill:hover,
+  .name-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--ink);
+    caret-color: var(--ink);
+    box-shadow: 0 0 0 1000px #0b0b0b inset;
+  }
+
+  .hint {
+    min-height: 20px;
+    margin: 8px 4px 0;
+    font-size: 13px;
+    line-height: 20px;
+    letter-spacing: 0.04em;
+    color: var(--danger);
+    opacity: 0;
+    transform: translateY(-3px);
+    transition: opacity 0.22s ease, transform 0.22s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .hint.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ========== 确认按钮 ========== */
+  .confirm {
+    display: block;
+    width: 100%;
+    height: 56px;
+    margin-top: 10px;
+    border: 0;
+    border-radius: var(--radius);
+    background: #fff;
+    color: #000;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.16s var(--ease-out), background-color 0.16s ease;
+  }
+
+  @media (hover: hover) {
+    .confirm:hover { background: #f1f1f1; }
+  }
+
+  .confirm:active {
+    transform: scale(0.975);
+    background: #e8e8e8;
+  }
+
+  .confirm:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  .confirm:disabled { cursor: default; }
+
+  /* ========== 成功页 ========== */
+  .success-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s ease, transform 0.6s var(--ease-out);
+    outline: none;
+  }
+
+  .success-view.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .check {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    margin-bottom: 38px;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+
+  .success-view.is-visible .check { opacity: 1; }
+
+  /* 外侧细圆环与柔光 */
+  .check::before {
+    content: "";
+    position: absolute;
+    inset: -28px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+    box-shadow: 0 0 60px rgba(255, 255, 255, 0.06);
+  }
+
+  .check-svg {
+    display: block;
+    width: 96px;
+    height: 96px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.14));
+  }
+
+  /* 描边预备状态：用虚线偏移把线条隐藏 */
+  .check-circle {
+    stroke-dasharray: 226.2;
+    stroke-dashoffset: 226.2;
+  }
+
+  .check-mark {
+    stroke-dasharray: 45;
+    stroke-dashoffset: 45;
+  }
+
+  .success-view.is-visible .check-circle {
+    animation: draw 0.85s var(--ease-draw) 0.1s forwards;
+  }
+
+  .success-view.is-visible .check-mark {
+    animation: draw 0.4s var(--ease-draw) 0.62s forwards;
+  }
+
+  .success-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.14em;
+    text-indent: 0.14em;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.55s ease 0.12s, transform 0.6s var(--ease-out) 0.12s;
+    outline: none;
+  }
+
+  .success-view.is-visible .success-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .success-rule {
+    width: 32px;
+    height: 1px;
+    margin: 20px 0 18px;
+    background: rgba(255, 255, 255, 0.18);
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition: opacity 0.5s ease 0.2s, transform 0.5s var(--ease-out) 0.2s;
+  }
+
+  .success-view.is-visible .success-rule {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .success-desc {
+    margin: 0;
+    max-width: 18em;
+    font-size: 15px;
+    line-height: 1.95;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    text-wrap: balance;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.55s ease 0.26s, transform 0.6s var(--ease-out) 0.26s;
+  }
+
+  .success-view.is-visible .success-desc {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ========== 页脚 ========== */
+  .foot {
+    position: fixed;
+    right: 0;
+    bottom: 20px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+    left: 0;
+    z-index: 2;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.48em;
+    text-indent: 0.48em;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.26);
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  body.is-success .foot { opacity: 0; }
+
+  /* 输入时收起页脚装饰，保持专注 */
+  body:focus-within .foot { opacity: 0; }
+
+  /* ========== 动效 ========== */
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-3px); }
+    40%, 60% { transform: translateX(3px); }
+  }
+
+  @keyframes draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* 矮屏（横屏 / 小屏）压缩留白，避免内容被截断 */
+  @media (max-height: 620px) {
+    .stage {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+    }
+    .field { margin-top: 30px; }
+    .check { margin-bottom: 26px; }
+  }
+
+  /* 尊重系统「减少动态效果」设置 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      transition-delay: 0ms !important;
+    }
+    .check-circle,
+    .check-mark { stroke-dashoffset: 0 !important; }
+    .check { opacity: 1 !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <!-- 首屏：姓名填写 -->
+    <section class="view form-view" id="formView" aria-labelledby="pageTitle">
+      <p class="eyebrow">NFC ACCESS</p>
+      <h1 class="title" id="pageTitle">欢迎加入<span class="brand">S.O.T.</span></h1>
+      <p class="lead">请输入你的姓名</p>
+
+      <div class="field">
+        <label class="sr-only" for="nameInput">你的姓名</label>
+        <input
+          class="name-input"
+          id="nameInput"
+          type="text"
+          name="name"
+          placeholder="你的姓名"
+          autocomplete="name"
+          inputmode="text"
+          enterkeyhint="done"
+          spellcheck="false"
+          maxlength="30"
+          aria-describedby="nameHint"
+        >
+        <p class="hint" id="nameHint" role="alert"></p>
+      </div>
+
+      <button class="confirm" id="confirmBtn" type="button">确认</button>
+    </section>
+
+    <!-- 成功页：默认隐藏，提交后淡入 -->
+    <section class="view success-view" id="successView" aria-label="申请成功，请携带相关资料去人事部门报道，谢谢配合" hidden>
+      <div class="check" aria-hidden="true">
+        <!-- 内联 SVG 细线圆勾，无任何外部图片 -->
+        <svg class="check-svg" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-circle" cx="48" cy="48" r="36" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+          <path class="check-mark" d="M33 49.5 L43.5 60 L64 38.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="success-title" id="successTitle" tabindex="-1">申请成功</h2>
+      <span class="success-rule" aria-hidden="true"></span>
+      <p class="success-desc">请携带相关资料去人事部门报道，谢谢配合</p>
+    </section>
+  </main>
+
+  <footer class="foot" aria-hidden="true">S.O.T.</footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var formView = document.getElementById('formView');
+      var successView = document.getElementById('successView');
+      var successTitle = document.getElementById('successTitle');
+      var nameInput = document.getElementById('nameInput');
+      var confirmBtn = document.getElementById('confirmBtn');
+      var nameHint = document.getElementById('nameHint');
+      var reduceQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+      var submitted = false; // 防止重复提交
+      var shakeTimer = 0;
+
+      function prefersReducedMotion() {
+        return !!(reduceQuery && reduceQuery.matches);
+      }
+
+      function clearError() {
+        nameHint.textContent = '';
+        nameHint.classList.remove('is-visible');
+        nameInput.classList.remove('is-invalid');
+        nameInput.removeAttribute('aria-invalid');
+      }
+
+      function showError() {
+        if (shakeTimer) window.clearTimeout(shakeTimer);
+
+        nameHint.textContent = '请填写你的姓名';
+        nameHint.classList.add('is-visible');
+        nameInput.classList.add('is-invalid');
+        nameInput.setAttribute('aria-invalid', 'true');
+
+        // 先移除再加回，强制重启动画，确保连续点击都有抖动反馈
+        nameInput.classList.remove('is-shaking');
+        void nameInput.offsetWidth;
+        nameInput.classList.add('is-shaking');
+
+        shakeTimer = window.setTimeout(function () {
+          nameInput.classList.remove('is-shaking');
+          shakeTimer = 0;
+        }, 420);
+
+        try {
+          nameInput.focus({ preventScroll: true });
+        } catch (error) {
+          nameInput.focus();
+        }
+      }
+
+      function revealSuccess() {
+        formView.hidden = true;
+        successView.hidden = false;
+        document.body.classList.add('is-success');
+
+        // 连续两帧后再加类，保证淡入与描边动画从初始状态开始
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            successView.classList.add('is-visible');
+            try {
+              successTitle.focus({ preventScroll: true });
+            } catch (error) {
+              successTitle.focus();
+            }
+          });
+        });
+      }
+
+      function submit() {
+        if (submitted) return;
+
+        if (!nameInput.value.trim()) {
+          showError();
+          return;
+        }
+
+        submitted = true;
+        confirmBtn.disabled = true;
+        confirmBtn.setAttribute('aria-disabled', 'true');
+        nameInput.readOnly = true;
+        nameInput.blur();
+        clearError();
+
+        formView.classList.add('is-leaving');
+
+        if (prefersReducedMotion()) {
+          revealSuccess();
+        } else {
+          window.setTimeout(revealSuccess, 400);
+        }
+      }
+
+      confirmBtn.addEventListener('click', submit);
+
+      // 键盘「完成 / 前往」键同样可以提交
+      nameInput.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter' || event.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        submit();
+      });
+
+      // 重新输入时立即清除错误提示
+      nameInput.addEventListener('input', function () {
+        if (nameHint.classList.contains('is-visible')) clearError();
+      });
+    })();
+  </script>
+</body>
+</html>
